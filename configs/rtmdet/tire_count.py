@@ -46,7 +46,7 @@ val_dataloader = dict(
         data_root=data_root,
         metainfo=metainfo,
         ann_file='valid/_annotations.coco.json',
-        data_prefix=dict(img='train/'),
+        data_prefix=dict(img='valid/'),
         test_mode=True,
     ),
 )
