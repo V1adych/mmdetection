@@ -3,7 +3,7 @@ _base_ = './rtmdet-ins_m_8xb32-300e_coco.py'
 classes = ('tire',)  # change to ('tires', 'tire') if you really want 2 classes
 num_classes = len(classes)
 metainfo = dict(classes=classes)
-data_root = 'ml/data/tire_count/'
+data_root = 'data/tire_count/'
 
 load_from = 'https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_m_8xb32-300e_coco/rtmdet-ins_m_8xb32-300e_coco_20221123_001039-6eba602e.pth'
 work_dir = 'work_dirs/rtmdet_ins_m_tire_count'
