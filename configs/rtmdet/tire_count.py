@@ -3,10 +3,10 @@ _base_ = './rtmdet-ins_m_8xb32-300e_coco.py'
 classes = ('tire',)  # change to ('tires', 'tire') if you really want 2 classes
 num_classes = len(classes)
 metainfo = dict(classes=classes)
-data_root = '/root/kolobok/ml/data/tire_count/'
+data_root = 'ml/data/tire_count/'
 
 load_from = 'https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_m_8xb32-300e_coco/rtmdet-ins_m_8xb32-300e_coco_20221123_001039-6eba602e.pth'
-work_dir = '/root/kolobok/ml/work_dirs/rtmdet_ins_m_tire_count'
+work_dir = 'work_dirs/rtmdet_ins_m_tire_count'
 
 model = dict(
     bbox_head=dict(num_classes=num_classes),
@@ -45,7 +45,7 @@ val_dataloader = dict(
     dataset=dict(
         data_root=data_root,
         metainfo=metainfo,
-        ann_file='val/_annotations.coco.json',
+        ann_file='valid/_annotations.coco.json',
         data_prefix=dict(img='train/'),
         test_mode=True,
     ),
@@ -63,7 +63,7 @@ test_dataloader = dict(
 )
 
 val_evaluator = dict(
-    ann_file=data_root + 'val/_annotations.coco.json',
+    ann_file=data_root + 'valid/_annotations.coco.json',
     metric=['bbox', 'segm'],
 )
 test_evaluator = dict(
