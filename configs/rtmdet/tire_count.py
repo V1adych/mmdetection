@@ -21,13 +21,35 @@ train_pipeline = [
         with_mask=True,
         poly2mask=True,
     ),
+    dict(
+        type='Albu',
+        transforms=[
+            dict(type='ShiftScaleRotate', shift_limit=0.05, scale_limit=0.25, rotate_limit=20, border_mode=0, p=0.8),
+            dict(
+                type='OneOf',
+                transforms=[
+                    dict(type='Blur', blur_limit=5, p=1.0),
+                    dict(type='MotionBlur', blur_limit=5, p=1.0),
+                    dict(type='MedianBlur', blur_limit=5, p=1.0),
+                ],
+                p=0.25,
+            ),
+            dict(type='RandomBrightnessContrast', brightness_limit=0.2, contrast_limit=0.2, p=0.35),
+            dict(type='GaussNoise', var_limit=(10.0, 50.0), p=0.2),
+            dict(type='CoarseDropout', max_holes=8, max_height=64, max_width=64, min_holes=1, min_height=16, min_width=16, fill_value=114, mask_fill_value=0, p=0.3),
+        ],
+        bbox_params=dict(type='BboxParams', format='pascal_voc', label_fields=['gt_bboxes_labels'], min_visibility=0.0, filter_lost_elements=True),
+        keymap=dict(img='image', gt_bboxes='bboxes', gt_masks='masks'),
+        skip_img_without_anno=True,
+    ),
     dict(type='Resize', scale=(640, 640), keep_ratio=False),
-    dict(type='RandomFlip', prob=0.5),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='RandomFlip', prob=0.5, direction='vertical'),
     dict(type='PackDetInputs'),
 ]
 
 train_dataloader = dict(
-    batch_size=4,
+    batch_size=8,
     num_workers=4,
     dataset=dict(
         data_root=data_root,
@@ -40,8 +62,8 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=1,
-    num_workers=2,
+    batch_size=8,
+    num_workers=4,
     dataset=dict(
         data_root=data_root,
         metainfo=metainfo,
@@ -51,8 +73,8 @@ val_dataloader = dict(
     ),
 )
 test_dataloader = dict(
-    batch_size=1,
-    num_workers=2,
+    batch_size=8,
+    num_workers=4,
     dataset=dict(
         data_root=data_root,
         metainfo=metainfo,
