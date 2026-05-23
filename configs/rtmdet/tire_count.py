@@ -1,12 +1,12 @@
-_base_ = './rtmdet-ins_m_8xb32-300e_coco.py'
+_base_ = "./rtmdet-ins_m_8xb32-300e_coco.py"
 
-classes = ('tire',)  # change to ('tires', 'tire') if you really want 2 classes
+classes = ("tire",)  # change to ('tires', 'tire') if you really want 2 classes
 num_classes = len(classes)
 metainfo = dict(classes=classes)
-data_root = 'data/tire_count/'
+data_root = "data/tire_count/"
 
-load_from = 'https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_m_8xb32-300e_coco/rtmdet-ins_m_8xb32-300e_coco_20221123_001039-6eba602e.pth'
-work_dir = 'work_dirs/rtmdet_ins_m_tire_count'
+load_from = "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_m_8xb32-300e_coco/rtmdet-ins_m_8xb32-300e_coco_20221123_001039-6eba602e.pth"
+work_dir = "work_dirs/rtmdet_ins_m_tire_count"
 
 model = dict(
     bbox_head=dict(num_classes=num_classes),
@@ -14,38 +14,52 @@ model = dict(
 )
 
 train_pipeline = [
-    dict(type='LoadImageFromFile', backend_args={{_base_.backend_args}}),
+    dict(type="LoadImageFromFile", backend_args={{_base_.backend_args}}),
     dict(
-        type='LoadAnnotations',
+        type="LoadAnnotations",
         with_bbox=True,
         with_mask=True,
         poly2mask=True,
     ),
     dict(
-        type='Albu',
+        type="Albu",
         transforms=[
-            dict(type='ShiftScaleRotate', shift_limit=0.05, scale_limit=0.25, rotate_limit=20, border_mode=0, p=0.8),
+            dict(type="Affine", translate_percent=(-0.05, 0.05), scale=(0.75, 1.25), rotate=(-20, 20), fit_output=False, p=0.5),
             dict(
-                type='OneOf',
+                type="OneOf",
                 transforms=[
-                    dict(type='Blur', blur_limit=5, p=1.0),
-                    dict(type='MotionBlur', blur_limit=5, p=1.0),
-                    dict(type='MedianBlur', blur_limit=5, p=1.0),
+                    dict(type="Blur", blur_limit=5, p=1.0),
+                    dict(type="MotionBlur", blur_limit=5, p=1.0),
+                    dict(type="MedianBlur", blur_limit=5, p=1.0),
                 ],
                 p=0.25,
             ),
-            dict(type='RandomBrightnessContrast', brightness_limit=0.2, contrast_limit=0.2, p=0.35),
-            dict(type='GaussNoise', var_limit=(10.0, 50.0), p=0.2),
-            dict(type='CoarseDropout', max_holes=8, max_height=64, max_width=64, min_holes=1, min_height=16, min_width=16, fill_value=114, mask_fill_value=0, p=0.3),
+            dict(type="RandomBrightnessContrast", brightness_limit=0.2, contrast_limit=0.2, p=0.15),
+            dict(type="GaussNoise", std_range=(0.04, 0.12), mean_range=(0.0, 0.0), p=0.15),
+            dict(
+                type="CoarseDropout",
+                num_holes_range=(1, 3),
+                hole_height_range=(0.03, 0.10),
+                hole_width_range=(0.03, 0.10),
+                fill=114,
+                fill_mask=0,
+                p=0.15,
+            ),
         ],
-        bbox_params=dict(type='BboxParams', format='pascal_voc', label_fields=['gt_bboxes_labels'], min_visibility=0.0, filter_lost_elements=True),
-        keymap=dict(img='image', gt_bboxes='bboxes', gt_masks='masks'),
+        bbox_params=dict(
+            type="BboxParams",
+            format="pascal_voc",
+            label_fields=["gt_bboxes_labels"],
+            min_visibility=0.0,
+            filter_lost_elements=True,
+        ),
+        keymap=dict(img="image", gt_bboxes="bboxes", gt_masks="masks"),
         skip_img_without_anno=True,
     ),
-    dict(type='Resize', scale=(640, 640), keep_ratio=False),
-    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='RandomFlip', prob=0.5, direction='vertical'),
-    dict(type='PackDetInputs'),
+    dict(type="Resize", scale=(640, 640), keep_ratio=False),
+    dict(type="RandomFlip", prob=0.5, direction="horizontal"),
+    dict(type="RandomFlip", prob=0.5, direction="vertical"),
+    dict(type="PackDetInputs"),
 ]
 
 train_dataloader = dict(
@@ -54,8 +68,8 @@ train_dataloader = dict(
     dataset=dict(
         data_root=data_root,
         metainfo=metainfo,
-        ann_file='train/_annotations.coco.json',
-        data_prefix=dict(img='train/'),
+        ann_file="train/_annotations.coco.json",
+        data_prefix=dict(img="train/"),
         filter_cfg=dict(filter_empty_gt=True, min_size=1),
         pipeline=train_pipeline,
     ),
@@ -67,8 +81,8 @@ val_dataloader = dict(
     dataset=dict(
         data_root=data_root,
         metainfo=metainfo,
-        ann_file='valid/_annotations.coco.json',
-        data_prefix=dict(img='valid/'),
+        ann_file="valid/_annotations.coco.json",
+        data_prefix=dict(img="valid/"),
         test_mode=True,
     ),
 )
@@ -78,19 +92,19 @@ test_dataloader = dict(
     dataset=dict(
         data_root=data_root,
         metainfo=metainfo,
-        ann_file='test/_annotations.coco.json',
-        data_prefix=dict(img='test/'),
+        ann_file="test/_annotations.coco.json",
+        data_prefix=dict(img="test/"),
         test_mode=True,
     ),
 )
 
 val_evaluator = dict(
-    ann_file=data_root + 'valid/_annotations.coco.json',
-    metric=['bbox', 'segm'],
+    ann_file=data_root + "valid/_annotations.coco.json",
+    metric=["bbox", "segm"],
 )
 test_evaluator = dict(
-    ann_file=data_root + 'test/_annotations.coco.json',
-    metric=['bbox', 'segm'],
+    ann_file=data_root + "test/_annotations.coco.json",
+    metric=["bbox", "segm"],
 )
 
 max_epochs = 10
@@ -102,8 +116,8 @@ train_cfg = dict(
 
 optim_wrapper = dict(
     _delete_=True,
-    type='OptimWrapper',
-    optimizer=dict(type='AdamW', lr=1e-4, weight_decay=0.01),
+    type="OptimWrapper",
+    optimizer=dict(type="AdamW", lr=1e-4, weight_decay=0.01),
     paramwise_cfg=dict(norm_decay_mult=0, bias_decay_mult=0, bypass_duplicate=True),
 )
 
@@ -113,15 +127,15 @@ default_hooks = dict(
     checkpoint=dict(
         interval=1,
         max_keep_ckpts=3,
-        save_best='coco/segm_mAP',
-        rule='greater',
+        save_best="coco/segm_mAP",
+        rule="greater",
     ),
 )
 
 custom_hooks = [
     dict(
-        type='EMAHook',
-        ema_type='ExpMomentumEMA',
+        type="EMAHook",
+        ema_type="ExpMomentumEMA",
         momentum=0.0002,
         update_buffers=True,
         priority=49,
@@ -129,22 +143,22 @@ custom_hooks = [
 ]
 
 vis_backends = [
-    dict(type='LocalVisBackend'),
-    dict(type='TensorboardVisBackend'),
+    dict(type="LocalVisBackend"),
+    dict(type="TensorboardVisBackend"),
 ]
 
 visualizer = dict(
-    type='DetLocalVisualizer',
+    type="DetLocalVisualizer",
     vis_backends=vis_backends,
-    name='visualizer',
+    name="visualizer",
 )
 
 default_hooks = dict(
     checkpoint=dict(
         interval=1,
         max_keep_ckpts=3,
-        save_best='coco/segm_mAP',
-        rule='greater',
+        save_best="coco/segm_mAP",
+        rule="greater",
     ),
-    logger=dict(type='LoggerHook', interval=10),
+    logger=dict(type="LoggerHook", interval=10),
 )
